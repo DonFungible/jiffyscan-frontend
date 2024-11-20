@@ -40,7 +40,7 @@ export interface tableDataT {
 }
 
 export interface fee {
-    value: string | { hex: string, type: string };
+    value: string | { hex: string; type: string };
     gas?: {
         children: string;
         color: string;
@@ -51,41 +51,43 @@ export interface fee {
 function Table(props: tableDataT) {
     const { rows, columns, caption, onRowClick, hideHeader } = props;
     const [sortedRows, setSortedRows] = useState(rows);
-    const [sortOrder, setSortOrder] = useState("asc");
+    const [sortOrder, setSortOrder] = useState('asc');
     const width = useWidth();
 
     let skeletonCards = Array(5).fill(0);
     const convertAgoToNumber = (ago: string): number => {
-        if (ago.includes("an")) return 1;
-        const [value, unit] = ago.split(" ");
+        if (ago.includes('an')) return 1;
+        const [value, unit] = ago.split(' ');
         switch (unit) {
-            case "hour":
-            case "hours":
+            case 'hour':
+            case 'hours':
                 return parseInt(value);
             default:
                 return Number.MAX_SAFE_INTEGER;
         }
-    }
+    };
     const sortRowsAscending = (rows: tableDataT['rows']): typeof rows => {
         return [...rows].sort((a, b) => convertAgoToNumber(a.ago!) - convertAgoToNumber(b.ago!));
-    }
+    };
     const sortRowsDescending = (rows: tableDataT['rows']): typeof rows => {
         return [...rows].sort((a, b) => convertAgoToNumber(b.ago!) - convertAgoToNumber(a.ago!));
-    }
+    };
     const handleSort = () => {
-        const data = sortOrder === "asc" ? sortRowsAscending(sortedRows) : sortRowsDescending(sortedRows);
+        const data = sortOrder === 'asc' ? sortRowsAscending(sortedRows) : sortRowsDescending(sortedRows);
         setSortedRows(data);
-        setSortOrder(prevOrder => prevOrder === "asc" ? "desc" : "asc");
+        setSortOrder((prevOrder) => (prevOrder === 'asc' ? 'desc' : 'asc'));
     };
 
-    useEffect(() => { 
+    useEffect(() => {
         setSortedRows(rows);
     }, [rows]);
     return (
         <div className="">
-            {!hideHeader && caption?.text && <Caption icon={caption?.icon!} text={caption?.text}>
-                {caption?.children}
-            </Caption>}
+            {!hideHeader && caption?.text && (
+                <Caption icon={caption?.icon!} text={caption?.text}>
+                    {caption?.children}
+                </Caption>
+            )}
             <ScrollContainer>
                 <div style={width < 768 ? { minWidth: columns?.length * 160 } : {}}>
                     <table className="w-full bg-white border text-md shadow-200 border-dark-100">
@@ -95,14 +97,14 @@ function Table(props: tableDataT) {
                                     return (
                                         <th
                                             key={key}
-                                            className={`py-3.5 px-4 border-b border-dark-100 group ${
+                                            className={`py-3.5 px-4 border-b border-dark-100 text-center  group ${
                                                 columns.length <= 3 ? 'md:first:wx-[55%]' : ''
                                             }`}
                                         >
                                             <div
                                                 role={sort ? 'button' : undefined}
-                                                className={`flex items-center gap-2.5 ${
-                                                    columns.length <= 3 ? 'group-last:justify-end' : ''
+                                                className={`flex items-center justify-center gap-2.5 ${
+                                                    columns.length <= 3 ? 'group-last:justify-center' : ''
                                                 }`}
                                                 onClick={() => sort && handleSort()}
                                             >
@@ -130,85 +132,92 @@ function Table(props: tableDataT) {
                             </tbody>
                         ) : (
                             <tbody>
-                                {sortedRows?.map(({ ago, fee, sender, target, token, userOps, status, count, poweredBy, created, keys }, index) => {
-                                    return (
-                                        <tr
-                                            key={index}
-                                            className="[&_td]:border-b User_Operations_table [&_td]:border-dark-100 [&_td]:py-3.5 [&_td]:px-4 odd:bg-dark-25 hover:bg-dark-25"
-                                        >
-                                            {token && (
-                                                <td className="">
-                                                    <Token {...token} />
-                                                </td>
-                                            )}
+                                {sortedRows?.map(
+                                    ({ ago, fee, sender, target, token, userOps, status, count, poweredBy, created, keys }, index) => {
+                                        return (
+                                            <tr
+                                                key={index}
+                                                className="[&_td]:border-b User_Operations_table [&_td]:border-dark-100 [&_td]:py-3.5 [&_td]:px-4 odd:bg-dark-25 hover:bg-dark-25"
+                                            >
+                                                {token && (
+                                                    <td className="flex justify-center">
+                                                        <Token {...token} />
+                                                    </td>
+                                                )}
 
-
-                                            {ago && (
-                                                <td className="">
-                                                    {status === true ? (
-                                                        <Status status="success" ago={ago} />
-                                                    ) : (
-                                                        <>
-                                                            {status === false ? (
-                                                                <Status status="failure" ago={ago} />
-                                                            ) : (
-                                                                <span className="tracking-normal">{ago}</span>
-                                                            )}
-                                                        </>
-                                                    )}
-                                                </td>
-                                            )}
-                                            
-                                            {userOps && (
-                                                <td className="">
-                                                    <span className="block text-center">{userOps}</span>
-                                                </td>
-                                            )}
-                                            {keys && (
-                                                <td className="">
-                                                    <Token text={keys} type="address" eyes/>
-                                                </td>
-                                            )}
-                                            {sender && (
-                                                <td className="">
-                                                    <Token text={sender} type="address" />
-                                                </td>
-                                            )}
-
-                                            {target && (
-                                                <td className="">
-                                                    
-                                                    { target.length > 0 &&  target.map((item, index) => {
-                                                        return (
-                                                            <Token key={index} text={item} type="address" />
-                                                        )
-                                                    })}
-                                                </td>
-                                            )}
-
-                                            {fee && (
-                                                <td className="">
-                                                    <div className="flex items-center justify-end gap-2 text-right">
-                                                        {fee.value ? <span>{typeof fee.value == "string" ? fee.value : parseInt(fee.value.hex)}</span> : "Unavailable" }
-                                                        {fee.gas && fee.value && (
-                                                            <Chip variant="outlined" color={fee.gas.color as ChipProps['color']} className='cursor-default'>
-                                                                {fee.gas.children}
-                                                            </Chip>
+                                                {ago && (
+                                                    <td className="">
+                                                        {status === true ? (
+                                                            <Status status="success" ago={ago} />
+                                                        ) : (
+                                                            <>
+                                                                {status === false ? (
+                                                                    <Status status="failure" ago={ago} />
+                                                                ) : (
+                                                                    <span className="tracking-normal">{ago}</span>
+                                                                )}
+                                                            </>
                                                         )}
-                                                        {fee.component && fee.component}
-                                                    </div>
-                                                </td>
-                                            )}
-                                            {created && (
-                                                <td className="">
-                                                    <div className="flex items-center justify-end gap-2 text-right">
-                                                        {created}
-                                                    </div>
-                                                </td>
-                                            )}
-                                        </tr>
-                                    );
-                                })}
+                                                    </td>
+                                                )}
+
+                                                {userOps && (
+                                                    <td className="">
+                                                        <span className="block text-center">{userOps}</span>
+                                                    </td>
+                                                )}
+                                                {keys && (
+                                                    <td className="">
+                                                        <Token text={keys} type="address" eyes />
+                                                    </td>
+                                                )}
+                                                {sender && (
+                                                    <td className="">
+                                                        <Token text={sender} type="address" />
+                                                    </td>
+                                                )}
+
+                                                {target && (
+                                                    <td className="flex items-center justify-center">
+                                                        {target.length > 0 &&
+                                                            target.map((item, index) => {
+                                                                return <Token key={index} text={item} type="address" />;
+                                                            })}
+                                                    </td>
+                                                )}
+
+                                                {fee && (
+                                                    <td className="">
+                                                        <div className="flex items-center justify-center gap-2.5 ">
+                                                            {fee.value ? (
+                                                                <span>
+                                                                    {typeof fee.value == 'string' ? fee.value : parseInt(fee.value.hex)}
+                                                                </span>
+                                                            ) : (
+                                                                'Unavailable'
+                                                            )}
+                                                            {fee.gas && fee.value && (
+                                                                <Chip
+                                                                    variant="outlined"
+                                                                    color={fee.gas.color as ChipProps['color']}
+                                                                    className="cursor-default"
+                                                                >
+                                                                    {fee.gas.children}
+                                                                </Chip>
+                                                            )}
+                                                            {fee.component && fee.component}
+                                                        </div>
+                                                    </td>
+                                                )}
+                                                {created && (
+                                                    <td className="">
+                                                        <div className="flex items-center justify-end gap-2 text-right">{created}</div>
+                                                    </td>
+                                                )}
+                                            </tr>
+                                        );
+                                    },
+                                )}
                             </tbody>
                         )}
                     </table>

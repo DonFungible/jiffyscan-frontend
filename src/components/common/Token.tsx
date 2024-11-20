@@ -43,7 +43,7 @@ function Token({ icon, text, copyIcon, type, onTokenClicked, value, eyes }: Toke
     const renderString = showText ? text : shortenString(text, eyes);
 
     return (
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center justify-center gap-2.5">
             {icon && <img src={icon} alt="" style={{ width: '20px', height: '20px' }} />}
             {onTokenClicked ? (
                 <a onClick={() => onTokenClicked(value ? value : 0)} className="text-blue-200 cursor-pointer">
